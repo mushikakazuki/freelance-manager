@@ -1,0 +1,14 @@
+includes:
+    - vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+    # 解析対象のパス
+    paths:
+        - app
+
+    # 解析レベル（0〜9、9が最も厳格）
+    level: 6
+
+    # 除外するパス
+    excludePaths:
+        - app/Console/Kernel.php

@@ -1,0 +1,225 @@
+"クエリのエントリポイント"
+type Query {
+    "認証済みユーザー情報を返す"
+    me: User @auth
+
+    "クライアント一覧を返す"
+    clients: [Client!]! @paginate(defaultCount: 20) @auth
+
+    "特定のクライアントを返す"
+    client(id: ID! @eq): Client @find @auth
+
+    "プロジェクト一覧を返す"
+    projects(clientId: ID @eq(key: "client_id")): [Project!]!
+        @paginate(defaultCount: 20) @auth
+
+    "特定のプロジェクトを返す"
+    project(id: ID! @eq): Project @find @auth
+
+    "請求書一覧を返す"
+    invoices(projectId: ID @eq(key: "project_id")): [Invoice!]!
+        @paginate(defaultCount: 20) @auth
+
+    "特定の請求書を返す"
+    invoice(id: ID! @eq): Invoice @find @auth
+}
+
+"ミューテーションのエントリポイント"
+type Mutation {
+    "ユーザー登録"
+    register(input: RegisterInput! @spread): AuthPayload!
+        @field(resolver: "App\\GraphQL\\Mutations\\AuthMutations@register")
+
+    "ログイン"
+    login(input: LoginInput! @spread): AuthPayload!
+        @field(resolver: "App\\GraphQL\\Mutations\\AuthMutations@login")
+
+    "ログアウト"
+    logout: Boolean!
+        @field(resolver: "App\\GraphQL\\Mutations\\AuthMutations@logout")
+        @auth
+
+    "クライアントを作成する"
+    createClient(input: CreateClientInput! @spread): Client! @create @auth
+
+    "クライアントを更新する"
+    updateClient(id: ID!, input: UpdateClientInput! @spread): Client! @update @auth
+
+    "クライアントを削除する"
+    deleteClient(id: ID!): Client @delete @auth
+
+    "プロジェクトを作成する"
+    createProject(input: CreateProjectInput! @spread): Project! @create @auth
+
+    "プロジェクトを更新する"
+    updateProject(id: ID!, input: UpdateProjectInput! @spread): Project! @update @auth
+
+    "プロジェクトを削除する"
+    deleteProject(id: ID!): Project @delete @auth
+
+    "請求書を作成する"
+    createInvoice(input: CreateInvoiceInput! @spread): Invoice! @create @auth
+
+    "請求書を更新する"
+    updateInvoice(id: ID!, input: UpdateInvoiceInput! @spread): Invoice! @update @auth
+
+    "請求書を削除する"
+    deleteInvoice(id: ID!): Invoice @delete @auth
+}
+
+"認証済みユーザー情報"
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    clients: [Client!]! @hasMany
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
+}
+
+"クライアント（顧客）情報"
+type Client {
+    id: ID!
+    userId: ID! @rename(attribute: "user_id")
+    name: String!
+    email: String
+    phone: String
+    address: String
+    notes: String
+    projects: [Project!]! @hasMany
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
+}
+
+"プロジェクト情報"
+type Project {
+    id: ID!
+    clientId: ID! @rename(attribute: "client_id")
+    name: String!
+    description: String
+    status: ProjectStatus!
+    startDate: Date @rename(attribute: "start_date")
+    endDate: Date @rename(attribute: "end_date")
+    hourlyRate: Float @rename(attribute: "hourly_rate")
+    client: Client! @belongsTo
+    invoices: [Invoice!]! @hasMany
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
+}
+
+"請求書情報"
+type Invoice {
+    id: ID!
+    projectId: ID! @rename(attribute: "project_id")
+    invoiceNumber: String! @rename(attribute: "invoice_number")
+    status: InvoiceStatus!
+    amount: Float!
+    taxRate: Float! @rename(attribute: "tax_rate")
+    taxAmount: Float! @rename(attribute: "tax_amount")
+    totalAmount: Float! @rename(attribute: "total_amount")
+    issuedAt: Date @rename(attribute: "issued_at")
+    dueAt: Date @rename(attribute: "due_at")
+    paidAt: DateTime @rename(attribute: "paid_at")
+    notes: String
+    project: Project! @belongsTo
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
+}
+
+"認証ペイロード"
+type AuthPayload {
+    token: String!
+    user: User!
+}
+
+"プロジェクトのステータス"
+enum ProjectStatus {
+    ACTIVE    @enum(value: "active")
+    COMPLETED @enum(value: "completed")
+    ON_HOLD   @enum(value: "on_hold")
+    CANCELLED @enum(value: "cancelled")
+}
+
+"請求書のステータス"
+enum InvoiceStatus {
+    DRAFT     @enum(value: "draft")
+    SENT      @enum(value: "sent")
+    PAID      @enum(value: "paid")
+    OVERDUE   @enum(value: "overdue")
+    CANCELLED @enum(value: "cancelled")
+}
+
+"ユーザー登録入力"
+input RegisterInput {
+    name: String!
+    email: String! @rules(apply: ["email", "unique:users"])
+    password: String! @rules(apply: ["min:8", "confirmed"])
+    passwordConfirmation: String!
+}
+
+"ログイン入力"
+input LoginInput {
+    email: String!
+    password: String!
+}
+
+"クライアント作成入力"
+input CreateClientInput {
+    name: String!
+    email: String @rules(apply: ["nullable", "email"])
+    phone: String
+    address: String
+    notes: String
+}
+
+"クライアント更新入力"
+input UpdateClientInput {
+    name: String
+    email: String @rules(apply: ["nullable", "email"])
+    phone: String
+    address: String
+    notes: String
+}
+
+"プロジェクト作成入力"
+input CreateProjectInput {
+    clientId: ID!
+    name: String!
+    description: String
+    status: ProjectStatus
+    startDate: Date
+    endDate: Date
+    hourlyRate: Float
+}
+
+"プロジェクト更新入力"
+input UpdateProjectInput {
+    clientId: ID
+    name: String
+    description: String
+    status: ProjectStatus
+    startDate: Date
+    endDate: Date
+    hourlyRate: Float
+}
+
+"請求書作成入力"
+input CreateInvoiceInput {
+    projectId: ID!
+    amount: Float!
+    taxRate: Float
+    issuedAt: Date
+    dueAt: Date
+    notes: String
+}
+
+"請求書更新入力"
+input UpdateInvoiceInput {
+    amount: Float
+    taxRate: Float
+    status: InvoiceStatus
+    issuedAt: Date
+    dueAt: Date
+    paidAt: DateTime
+    notes: String
+}
