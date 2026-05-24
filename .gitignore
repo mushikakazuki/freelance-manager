@@ -44,3 +44,6 @@ backend/coverage/
 
 # PHPStan キャッシュ
 backend/.phpstan.cache/
+
+# ローカル作業メモ
+Todo.md
