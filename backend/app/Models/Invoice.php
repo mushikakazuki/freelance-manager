@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * 請求書モデル
@@ -30,6 +31,8 @@ class Invoice extends Model
         'due_at',
         'paid_at',
         'notes',
+        'tax_amount',
+        'total_amount',
     ];
 
     /**
@@ -53,5 +56,13 @@ class Invoice extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * 請求書に紐づく明細一覧
+     */
+    public function invoiceItems(): HasMany
+    {
+        return $this->hasMany(InvoiceItem::class)->orderBy('sort_order');
     }
 }

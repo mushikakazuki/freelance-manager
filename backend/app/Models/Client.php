@@ -45,4 +45,12 @@ class Client extends Model
     {
         return $this->hasMany(Project::class);
     }
+
+    /**
+     * クライアントに紐づく契約一覧
+     */
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class);
+    }
 }

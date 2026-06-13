@@ -57,4 +57,36 @@ class Project extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
+    /**
+     * プロジェクトに紐づく作業ログ一覧
+     */
+    public function workLogs(): HasMany
+    {
+        return $this->hasMany(WorkLog::class);
+    }
+
+    /**
+     * プロジェクトに紐づく経費一覧
+     */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    /**
+     * プロジェクトに紐づくタスク一覧
+     */
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class)->orderBy('sort_order');
+    }
+
+    /**
+     * プロジェクトに紐づく契約一覧
+     */
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class);
+    }
 }

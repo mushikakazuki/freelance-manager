@@ -22,6 +22,34 @@ type Query {
 
     "特定の請求書を返す"
     invoice(id: ID! @eq): Invoice @find @auth
+
+    "作業ログ一覧を返す"
+    workLogs(projectId: ID @eq(key: "project_id")): [WorkLog!]!
+        @paginate(defaultCount: 20) @auth
+
+    "特定の作業ログを返す"
+    workLog(id: ID! @eq): WorkLog @find @auth
+
+    "経費一覧を返す"
+    expenses(projectId: ID @eq(key: "project_id")): [Expense!]!
+        @paginate(defaultCount: 20) @auth
+
+    "特定の経費を返す"
+    expense(id: ID! @eq): Expense @find @auth
+
+    "タスク一覧を返す"
+    tasks(projectId: ID @eq(key: "project_id")): [Task!]!
+        @paginate(defaultCount: 20) @auth
+
+    "特定のタスクを返す"
+    task(id: ID! @eq): Task @find @auth
+
+    "契約一覧を返す"
+    contracts(clientId: ID @eq(key: "client_id")): [Contract!]!
+        @paginate(defaultCount: 20) @auth
+
+    "特定の契約を返す"
+    contract(id: ID! @eq): Contract @find @auth
 }
 
 "ミューテーションのエントリポイント"
@@ -65,6 +93,42 @@ type Mutation {
 
     "請求書を削除する"
     deleteInvoice(id: ID!): Invoice @delete @auth
+
+    "作業ログを作成する"
+    createWorkLog(input: CreateWorkLogInput! @spread): WorkLog! @create @auth
+
+    "作業ログを更新する"
+    updateWorkLog(id: ID!, input: UpdateWorkLogInput! @spread): WorkLog! @update @auth
+
+    "作業ログを削除する"
+    deleteWorkLog(id: ID!): WorkLog @delete @auth
+
+    "経費を作成する"
+    createExpense(input: CreateExpenseInput! @spread): Expense! @create @auth
+
+    "経費を更新する"
+    updateExpense(id: ID!, input: UpdateExpenseInput! @spread): Expense! @update @auth
+
+    "経費を削除する"
+    deleteExpense(id: ID!): Expense @delete @auth
+
+    "タスクを作成する"
+    createTask(input: CreateTaskInput! @spread): Task! @create @auth
+
+    "タスクを更新する"
+    updateTask(id: ID!, input: UpdateTaskInput! @spread): Task! @update @auth
+
+    "タスクを削除する"
+    deleteTask(id: ID!): Task @delete @auth
+
+    "契約を作成する"
+    createContract(input: CreateContractInput! @spread): Contract! @create @auth
+
+    "契約を更新する"
+    updateContract(id: ID!, input: UpdateContractInput! @spread): Contract! @update @auth
+
+    "契約を削除する"
+    deleteContract(id: ID!): Contract @delete @auth
 }
 
 "認証済みユーザー情報"
@@ -73,6 +137,7 @@ type User {
     name: String!
     email: String!
     clients: [Client!]! @hasMany
+    workLogs: [WorkLog!]! @hasMany
     createdAt: DateTime! @rename(attribute: "created_at")
     updatedAt: DateTime! @rename(attribute: "updated_at")
 }
@@ -87,6 +152,7 @@ type Client {
     address: String
     notes: String
     projects: [Project!]! @hasMany
+    contracts: [Contract!]! @hasMany
     createdAt: DateTime! @rename(attribute: "created_at")
     updatedAt: DateTime! @rename(attribute: "updated_at")
 }
@@ -103,6 +169,10 @@ type Project {
     hourlyRate: Float @rename(attribute: "hourly_rate")
     client: Client! @belongsTo
     invoices: [Invoice!]! @hasMany
+    workLogs: [WorkLog!]! @hasMany
+    expenses: [Expense!]! @hasMany
+    tasks: [Task!]! @hasMany
+    contracts: [Contract!]! @hasMany
     createdAt: DateTime! @rename(attribute: "created_at")
     updatedAt: DateTime! @rename(attribute: "updated_at")
 }
@@ -122,6 +192,84 @@ type Invoice {
     paidAt: DateTime @rename(attribute: "paid_at")
     notes: String
     project: Project! @belongsTo
+    invoiceItems: [InvoiceItem!]! @hasMany
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
+}
+
+"請求書明細情報"
+type InvoiceItem {
+    id: ID!
+    invoiceId: ID! @rename(attribute: "invoice_id")
+    description: String
+    quantity: Float!
+    unitPrice: Float! @rename(attribute: "unit_price")
+    amount: Float!
+    sortOrder: Int! @rename(attribute: "sort_order")
+    invoice: Invoice! @belongsTo
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
+}
+
+"作業ログ情報"
+type WorkLog {
+    id: ID!
+    projectId: ID! @rename(attribute: "project_id")
+    userId: ID! @rename(attribute: "user_id")
+    workedDate: Date! @rename(attribute: "worked_date")
+    hours: Float!
+    description: String
+    hourlyRate: Float @rename(attribute: "hourly_rate")
+    project: Project! @belongsTo
+    user: User! @belongsTo
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
+}
+
+"経費情報"
+type Expense {
+    id: ID!
+    projectId: ID! @rename(attribute: "project_id")
+    category: ExpenseCategory!
+    description: String!
+    amount: Float!
+    incurredAt: Date! @rename(attribute: "incurred_at")
+    receiptUrl: String @rename(attribute: "receipt_url")
+    project: Project! @belongsTo
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
+}
+
+"タスク情報"
+type Task {
+    id: ID!
+    projectId: ID! @rename(attribute: "project_id")
+    title: String!
+    description: String
+    status: TaskStatus!
+    priority: TaskPriority!
+    dueDate: Date @rename(attribute: "due_date")
+    completedAt: DateTime @rename(attribute: "completed_at")
+    sortOrder: Int! @rename(attribute: "sort_order")
+    project: Project! @belongsTo
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
+}
+
+"契約情報"
+type Contract {
+    id: ID!
+    clientId: ID! @rename(attribute: "client_id")
+    projectId: ID @rename(attribute: "project_id")
+    title: String!
+    hourlyRate: Float @rename(attribute: "hourly_rate")
+    monthlyRate: Float @rename(attribute: "monthly_rate")
+    paymentTerms: Int @rename(attribute: "payment_terms")
+    startDate: Date! @rename(attribute: "start_date")
+    endDate: Date @rename(attribute: "end_date")
+    notes: String
+    client: Client! @belongsTo
+    project: Project @belongsTo
     createdAt: DateTime! @rename(attribute: "created_at")
     updatedAt: DateTime! @rename(attribute: "updated_at")
 }
@@ -147,6 +295,28 @@ enum InvoiceStatus {
     PAID      @enum(value: "paid")
     OVERDUE   @enum(value: "overdue")
     CANCELLED @enum(value: "cancelled")
+}
+
+"経費カテゴリ"
+enum ExpenseCategory {
+    TRANSPORTATION @enum(value: "transportation")
+    SUPPLIES       @enum(value: "supplies")
+    OUTSOURCING    @enum(value: "outsourcing")
+    OTHER          @enum(value: "other")
+}
+
+"タスクのステータス"
+enum TaskStatus {
+    TODO        @enum(value: "todo")
+    IN_PROGRESS @enum(value: "in_progress")
+    DONE        @enum(value: "done")
+}
+
+"タスクの優先度"
+enum TaskPriority {
+    LOW    @enum(value: "low")
+    MEDIUM @enum(value: "medium")
+    HIGH   @enum(value: "high")
 }
 
 "ユーザー登録入力"
@@ -221,5 +391,107 @@ input UpdateInvoiceInput {
     issuedAt: Date
     dueAt: Date
     paidAt: DateTime
+    notes: String
+}
+
+"請求書明細作成入力"
+input CreateInvoiceItemInput {
+    invoiceId: ID!
+    description: String
+    quantity: Float!
+    unitPrice: Float!
+    amount: Float!
+    sortOrder: Int
+}
+
+"請求書明細更新入力"
+input UpdateInvoiceItemInput {
+    description: String
+    quantity: Float
+    unitPrice: Float
+    amount: Float
+    sortOrder: Int
+}
+
+"作業ログ作成入力"
+input CreateWorkLogInput {
+    projectId: ID!
+    workedDate: Date!
+    hours: Float!
+    description: String
+    hourlyRate: Float
+}
+
+"作業ログ更新入力"
+input UpdateWorkLogInput {
+    workedDate: Date
+    hours: Float
+    description: String
+    hourlyRate: Float
+}
+
+"経費作成入力"
+input CreateExpenseInput {
+    projectId: ID!
+    category: ExpenseCategory!
+    description: String!
+    amount: Float!
+    incurredAt: Date!
+    receiptUrl: String
+}
+
+"経費更新入力"
+input UpdateExpenseInput {
+    category: ExpenseCategory
+    description: String
+    amount: Float
+    incurredAt: Date
+    receiptUrl: String
+}
+
+"タスク作成入力"
+input CreateTaskInput {
+    projectId: ID!
+    title: String!
+    description: String
+    status: TaskStatus
+    priority: TaskPriority
+    dueDate: Date
+    sortOrder: Int
+}
+
+"タスク更新入力"
+input UpdateTaskInput {
+    title: String
+    description: String
+    status: TaskStatus
+    priority: TaskPriority
+    dueDate: Date
+    completedAt: DateTime
+    sortOrder: Int
+}
+
+"契約作成入力"
+input CreateContractInput {
+    clientId: ID!
+    projectId: ID
+    title: String!
+    hourlyRate: Float
+    monthlyRate: Float
+    paymentTerms: Int
+    startDate: Date!
+    endDate: Date
+    notes: String
+}
+
+"契約更新入力"
+input UpdateContractInput {
+    projectId: ID
+    title: String
+    hourlyRate: Float
+    monthlyRate: Float
+    paymentTerms: Int
+    startDate: Date
+    endDate: Date
     notes: String
 }
