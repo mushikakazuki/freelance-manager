@@ -50,6 +50,31 @@ class Invoice extends Model
         'paid_at'      => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (Invoice $invoice) {
+            if (empty($invoice->invoice_number)) {
+                $year = now()->format('Y');
+                $count = self::whereYear('created_at', $year)->count() + 1;
+                $invoice->invoice_number = sprintf('INV-%s-%04d', $year, $count);
+            }
+            if (empty($invoice->status)) {
+                $invoice->status = 'draft';
+            }
+            $taxRate = $invoice->tax_rate ?? 10;
+            $invoice->tax_amount = round($invoice->amount * $taxRate / 100);
+            $invoice->total_amount = $invoice->amount + $invoice->tax_amount;
+        });
+
+        static::updating(function (Invoice $invoice) {
+            if ($invoice->isDirty(['amount', 'tax_rate'])) {
+                $taxRate = $invoice->tax_rate ?? 10;
+                $invoice->tax_amount = round($invoice->amount * $taxRate / 100);
+                $invoice->total_amount = $invoice->amount + $invoice->tax_amount;
+            }
+        });
+    }
+
     /**
      * 請求書が属するプロジェクト
      */

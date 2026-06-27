@@ -1,55 +1,58 @@
+scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
 "クエリのエントリポイント"
 type Query {
     "認証済みユーザー情報を返す"
     me: User @auth
 
     "クライアント一覧を返す"
-    clients: [Client!]! @paginate(defaultCount: 20) @auth
+    clients: [Client!]! @paginate(defaultCount: 20) @guard
 
     "特定のクライアントを返す"
-    client(id: ID! @eq): Client @find @auth
+    client(id: ID! @eq): Client @find @guard
 
     "プロジェクト一覧を返す"
     projects(clientId: ID @eq(key: "client_id")): [Project!]!
-        @paginate(defaultCount: 20) @auth
+        @paginate(defaultCount: 20) @guard
 
     "特定のプロジェクトを返す"
-    project(id: ID! @eq): Project @find @auth
+    project(id: ID! @eq): Project @find @guard
 
     "請求書一覧を返す"
     invoices(projectId: ID @eq(key: "project_id")): [Invoice!]!
-        @paginate(defaultCount: 20) @auth
+        @paginate(defaultCount: 20) @guard
 
     "特定の請求書を返す"
-    invoice(id: ID! @eq): Invoice @find @auth
+    invoice(id: ID! @eq): Invoice @find @guard
 
     "作業ログ一覧を返す"
     workLogs(projectId: ID @eq(key: "project_id")): [WorkLog!]!
-        @paginate(defaultCount: 20) @auth
+        @paginate(defaultCount: 20) @guard
 
     "特定の作業ログを返す"
-    workLog(id: ID! @eq): WorkLog @find @auth
+    workLog(id: ID! @eq): WorkLog @find @guard
 
     "経費一覧を返す"
     expenses(projectId: ID @eq(key: "project_id")): [Expense!]!
-        @paginate(defaultCount: 20) @auth
+        @paginate(defaultCount: 20) @guard
 
     "特定の経費を返す"
-    expense(id: ID! @eq): Expense @find @auth
+    expense(id: ID! @eq): Expense @find @guard
 
     "タスク一覧を返す"
     tasks(projectId: ID @eq(key: "project_id")): [Task!]!
-        @paginate(defaultCount: 20) @auth
+        @paginate(defaultCount: 20) @guard
 
     "特定のタスクを返す"
-    task(id: ID! @eq): Task @find @auth
+    task(id: ID! @eq): Task @find @guard
 
     "契約一覧を返す"
     contracts(clientId: ID @eq(key: "client_id")): [Contract!]!
-        @paginate(defaultCount: 20) @auth
+        @paginate(defaultCount: 20) @guard
 
     "特定の契約を返す"
-    contract(id: ID! @eq): Contract @find @auth
+    contract(id: ID! @eq): Contract @find @guard
 }
 
 "ミューテーションのエントリポイント"
@@ -65,70 +68,70 @@ type Mutation {
     "ログアウト"
     logout: Boolean!
         @field(resolver: "App\\GraphQL\\Mutations\\AuthMutations@logout")
-        @auth
+        @guard
 
     "クライアントを作成する"
-    createClient(input: CreateClientInput! @spread): Client! @create @auth
+    createClient(input: CreateClientInput! @spread): Client! @create @guard @inject(context: "user.id", name: "user_id")
 
     "クライアントを更新する"
-    updateClient(id: ID!, input: UpdateClientInput! @spread): Client! @update @auth
+    updateClient(id: ID!, input: UpdateClientInput! @spread): Client! @update @guard
 
     "クライアントを削除する"
-    deleteClient(id: ID!): Client @delete @auth
+    deleteClient(id: ID!): Client @delete @guard
 
     "プロジェクトを作成する"
-    createProject(input: CreateProjectInput! @spread): Project! @create @auth
+    createProject(input: CreateProjectInput! @spread): Project! @create @guard
 
     "プロジェクトを更新する"
-    updateProject(id: ID!, input: UpdateProjectInput! @spread): Project! @update @auth
+    updateProject(id: ID!, input: UpdateProjectInput! @spread): Project! @update @guard
 
     "プロジェクトを削除する"
-    deleteProject(id: ID!): Project @delete @auth
+    deleteProject(id: ID!): Project @delete @guard
 
     "請求書を作成する"
-    createInvoice(input: CreateInvoiceInput! @spread): Invoice! @create @auth
+    createInvoice(input: CreateInvoiceInput! @spread): Invoice! @create @guard
 
     "請求書を更新する"
-    updateInvoice(id: ID!, input: UpdateInvoiceInput! @spread): Invoice! @update @auth
+    updateInvoice(id: ID!, input: UpdateInvoiceInput! @spread): Invoice! @update @guard
 
     "請求書を削除する"
-    deleteInvoice(id: ID!): Invoice @delete @auth
+    deleteInvoice(id: ID!): Invoice @delete @guard
 
     "作業ログを作成する"
-    createWorkLog(input: CreateWorkLogInput! @spread): WorkLog! @create @auth
+    createWorkLog(input: CreateWorkLogInput! @spread): WorkLog! @create @guard @inject(context: "user.id", name: "user_id")
 
     "作業ログを更新する"
-    updateWorkLog(id: ID!, input: UpdateWorkLogInput! @spread): WorkLog! @update @auth
+    updateWorkLog(id: ID!, input: UpdateWorkLogInput! @spread): WorkLog! @update @guard
 
     "作業ログを削除する"
-    deleteWorkLog(id: ID!): WorkLog @delete @auth
+    deleteWorkLog(id: ID!): WorkLog @delete @guard
 
     "経費を作成する"
-    createExpense(input: CreateExpenseInput! @spread): Expense! @create @auth
+    createExpense(input: CreateExpenseInput! @spread): Expense! @create @guard
 
     "経費を更新する"
-    updateExpense(id: ID!, input: UpdateExpenseInput! @spread): Expense! @update @auth
+    updateExpense(id: ID!, input: UpdateExpenseInput! @spread): Expense! @update @guard
 
     "経費を削除する"
-    deleteExpense(id: ID!): Expense @delete @auth
+    deleteExpense(id: ID!): Expense @delete @guard
 
     "タスクを作成する"
-    createTask(input: CreateTaskInput! @spread): Task! @create @auth
+    createTask(input: CreateTaskInput! @spread): Task! @create @guard
 
     "タスクを更新する"
-    updateTask(id: ID!, input: UpdateTaskInput! @spread): Task! @update @auth
+    updateTask(id: ID!, input: UpdateTaskInput! @spread): Task! @update @guard
 
     "タスクを削除する"
-    deleteTask(id: ID!): Task @delete @auth
+    deleteTask(id: ID!): Task @delete @guard
 
     "契約を作成する"
-    createContract(input: CreateContractInput! @spread): Contract! @create @auth
+    createContract(input: CreateContractInput! @spread): Contract! @create @guard
 
     "契約を更新する"
-    updateContract(id: ID!, input: UpdateContractInput! @spread): Contract! @update @auth
+    updateContract(id: ID!, input: UpdateContractInput! @spread): Contract! @update @guard
 
     "契約を削除する"
-    deleteContract(id: ID!): Contract @delete @auth
+    deleteContract(id: ID!): Contract @delete @guard
 }
 
 "認証済みユーザー情報"
@@ -322,8 +325,8 @@ enum TaskPriority {
 "ユーザー登録入力"
 input RegisterInput {
     name: String!
-    email: String! @rules(apply: ["email", "unique:users"])
-    password: String! @rules(apply: ["min:8", "confirmed"])
+    email: String! @rules(apply: ["email", "unique:users,email"])
+    password: String! @rules(apply: ["min:8", "same:passwordConfirmation"])
     passwordConfirmation: String!
 }
 
@@ -353,91 +356,91 @@ input UpdateClientInput {
 
 "プロジェクト作成入力"
 input CreateProjectInput {
-    clientId: ID!
+    clientId: ID! @rename(attribute: "client_id")
     name: String!
     description: String
     status: ProjectStatus
-    startDate: Date
-    endDate: Date
-    hourlyRate: Float
+    startDate: Date @rename(attribute: "start_date")
+    endDate: Date @rename(attribute: "end_date")
+    hourlyRate: Float @rename(attribute: "hourly_rate")
 }
 
 "プロジェクト更新入力"
 input UpdateProjectInput {
-    clientId: ID
+    clientId: ID @rename(attribute: "client_id")
     name: String
     description: String
     status: ProjectStatus
-    startDate: Date
-    endDate: Date
-    hourlyRate: Float
+    startDate: Date @rename(attribute: "start_date")
+    endDate: Date @rename(attribute: "end_date")
+    hourlyRate: Float @rename(attribute: "hourly_rate")
 }
 
 "請求書作成入力"
 input CreateInvoiceInput {
-    projectId: ID!
+    projectId: ID! @rename(attribute: "project_id")
     amount: Float!
-    taxRate: Float
-    issuedAt: Date
-    dueAt: Date
+    taxRate: Float @rename(attribute: "tax_rate")
+    issuedAt: Date @rename(attribute: "issued_at")
+    dueAt: Date @rename(attribute: "due_at")
     notes: String
 }
 
 "請求書更新入力"
 input UpdateInvoiceInput {
     amount: Float
-    taxRate: Float
+    taxRate: Float @rename(attribute: "tax_rate")
     status: InvoiceStatus
-    issuedAt: Date
-    dueAt: Date
-    paidAt: DateTime
+    issuedAt: Date @rename(attribute: "issued_at")
+    dueAt: Date @rename(attribute: "due_at")
+    paidAt: DateTime @rename(attribute: "paid_at")
     notes: String
 }
 
 "請求書明細作成入力"
 input CreateInvoiceItemInput {
-    invoiceId: ID!
+    invoiceId: ID! @rename(attribute: "invoice_id")
     description: String
     quantity: Float!
-    unitPrice: Float!
+    unitPrice: Float! @rename(attribute: "unit_price")
     amount: Float!
-    sortOrder: Int
+    sortOrder: Int @rename(attribute: "sort_order")
 }
 
 "請求書明細更新入力"
 input UpdateInvoiceItemInput {
     description: String
     quantity: Float
-    unitPrice: Float
+    unitPrice: Float @rename(attribute: "unit_price")
     amount: Float
-    sortOrder: Int
+    sortOrder: Int @rename(attribute: "sort_order")
 }
 
 "作業ログ作成入力"
 input CreateWorkLogInput {
-    projectId: ID!
-    workedDate: Date!
+    projectId: ID! @rename(attribute: "project_id")
+    workedDate: Date! @rename(attribute: "worked_date")
     hours: Float!
     description: String
-    hourlyRate: Float
+    hourlyRate: Float @rename(attribute: "hourly_rate")
 }
 
 "作業ログ更新入力"
 input UpdateWorkLogInput {
-    workedDate: Date
+    workedDate: Date @rename(attribute: "worked_date")
     hours: Float
     description: String
-    hourlyRate: Float
+    hourlyRate: Float @rename(attribute: "hourly_rate")
 }
 
 "経費作成入力"
 input CreateExpenseInput {
-    projectId: ID!
+    projectId: ID! @rename(attribute: "project_id")
     category: ExpenseCategory!
     description: String!
     amount: Float!
-    incurredAt: Date!
-    receiptUrl: String
+    incurredAt: Date! @rename(attribute: "incurred_at")
+    receiptUrl: String @rename(attribute: "receipt_url")
 }
 
 "経費更新入力"
@@ -445,19 +448,19 @@ input UpdateExpenseInput {
     category: ExpenseCategory
     description: String
     amount: Float
-    incurredAt: Date
-    receiptUrl: String
+    incurredAt: Date @rename(attribute: "incurred_at")
+    receiptUrl: String @rename(attribute: "receipt_url")
 }
 
 "タスク作成入力"
 input CreateTaskInput {
-    projectId: ID!
+    projectId: ID! @rename(attribute: "project_id")
     title: String!
     description: String
     status: TaskStatus
     priority: TaskPriority
-    dueDate: Date
-    sortOrder: Int
+    dueDate: Date @rename(attribute: "due_date")
+    sortOrder: Int @rename(attribute: "sort_order")
 }
 
 "タスク更新入力"
@@ -466,32 +469,32 @@ input UpdateTaskInput {
     description: String
     status: TaskStatus
     priority: TaskPriority
-    dueDate: Date
-    completedAt: DateTime
-    sortOrder: Int
+    dueDate: Date @rename(attribute: "due_date")
+    completedAt: DateTime @rename(attribute: "completed_at")
+    sortOrder: Int @rename(attribute: "sort_order")
 }
 
 "契約作成入力"
 input CreateContractInput {
-    clientId: ID!
-    projectId: ID
+    clientId: ID! @rename(attribute: "client_id")
+    projectId: ID @rename(attribute: "project_id")
     title: String!
-    hourlyRate: Float
-    monthlyRate: Float
-    paymentTerms: Int
-    startDate: Date!
-    endDate: Date
+    hourlyRate: Float @rename(attribute: "hourly_rate")
+    monthlyRate: Float @rename(attribute: "monthly_rate")
+    paymentTerms: Int @rename(attribute: "payment_terms")
+    startDate: Date! @rename(attribute: "start_date")
+    endDate: Date @rename(attribute: "end_date")
     notes: String
 }
 
 "契約更新入力"
 input UpdateContractInput {
-    projectId: ID
+    projectId: ID @rename(attribute: "project_id")
     title: String
-    hourlyRate: Float
-    monthlyRate: Float
-    paymentTerms: Int
-    startDate: Date
-    endDate: Date
+    hourlyRate: Float @rename(attribute: "hourly_rate")
+    monthlyRate: Float @rename(attribute: "monthly_rate")
+    paymentTerms: Int @rename(attribute: "payment_terms")
+    startDate: Date @rename(attribute: "start_date")
+    endDate: Date @rename(attribute: "end_date")
     notes: String
 }

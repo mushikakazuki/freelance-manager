@@ -48,14 +48,14 @@ class AuthMutations
      */
     public function login(mixed $root, array $args): array
     {
-        // 認証情報を確認する
-        if (! Auth::attempt(['email' => $args['email'], 'password' => $args['password']])) {
+        $user = User::where('email', $args['email'])->first();
+
+        if (! $user || ! Hash::check($args['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'email' => 'メールアドレスまたはパスワードが正しくありません。',
             ]);
         }
 
-        $user  = Auth::user();
         $token = $user->createToken('api-token')->plainTextToken;
 
         return [
